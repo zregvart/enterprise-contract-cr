@@ -19,17 +19,20 @@ modified to include the latest policies via a custom built image from
 [quay.io/redhat-appstudio/hacbs-test](https://quay.io/repository/redhat-appstudio/hacbs-test)
 image has not been updated with the latest policies at the time of creating
 the demo.
+
 The output of the `sanity-label-check` task is captured and the non-JSON
 content is filtered out and stored in the `hacbs-test-output` ConfigMap.
 This is how the test output will be passed to the Enterprise Contract task.
 The Enterprise Contract task, defined in `ec-task.yml` takes that output
 mounted as a volume, a Golang Template also stored in the ConfigMap and mounted
 as a volume to produce the script that will be run.
+
 The script defined via `contract-script.tmpl` loops through all referenced
 policies from the `sample` `EnterpriseContract` custom resource and uses
 `oc image extract` to copy the files out of the images to
 `${WORKDIR}/policies/${POLICYDIR}`. The `${WORKDIR}/config/suppressions.json`
 JSON file is built containing the suppressed names of HACBS tests whose failures
 should be ignored.
+
 Lastly `opa` is invoked with the all policy directories, test data directory
 and the configuration directory and the output is pretty printed.
