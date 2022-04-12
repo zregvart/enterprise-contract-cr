@@ -18,5 +18,4 @@ SUPPRESSIONS=$(echo "${SUPPRESSIONS}" | jq '.suppress["'${POLICY}'"][.suppress["
 {{ end }}
 mkdir "${WORKDIR}/config"
 echo "${SUPPRESSIONS}" > "${WORKDIR}/config/suppressions.json"
-cat "${WORKDIR}/config/suppressions.json"
 opa eval ${POLICIES[@]} --data "${WORKDIR}/config" --data "$1" 'data.hacbs.contract[_].deny[_]' --format pretty
