@@ -1,0 +1,31 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ec-task
+spec:
+  params:
+    - name: POLICY_NAME
+      type: string
+  steps:
+    - image: ${APPSTUDIO_UTILS_IMGREF}
+      name: ec
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        EC_SCRIPT=$(mktemp)
+        kubectl get ec $(params.POLICY_NAME) --output=go-template-file=/var/ec-task/contract-script.tmpl > "${EC_SCRIPT}"
+        chmod +x "${EC_SCRIPT}"
+        "${EC_SCRIPT}" /var/ec-data/data
+      volumeMounts:
+        - mountPath: /var/ec-task
+          name: template
+        - mountPath: /var/ec-data/data
+          name: test-output
+  volumes:
+    - configMap:
+        name: ec-kubectl-template
+      name: template
+    - configMap:
+        name: hacbs-test-output
+      name: test-output

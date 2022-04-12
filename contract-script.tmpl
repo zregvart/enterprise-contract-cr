@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -eou pipefail
+
+WORKDIR=$(mktemp -d)
+POLICIES=()
+SUPPRESSIONS="{}"
+{{ range .spec.rules }}
+POLICY="$(echo {{ .ref }} | sed 's/.*\/\([^:]*\).*/\1/')"
+POLICYDIR="${WORKDIR}/${POLICY}"
+mkdir "${POLICYDIR}"
+(cd "${POLICYDIR}"; oc image extract {{ .ref }})
+POLICIES+=("--data ${POLICYDIR}")
+    {{- with .suppress }}
+        {{- range . }}
+SUPPRESSIONS=$(echo "${SUPPRESSIONS}" | jq '.suppress["'${POLICY}'"][.suppress["'${POLICY}'"]|length] |= . + "{{ . }}"')
+        {{- end }}
+    {{- end }}
+{{ end }}
+mkdir "${WORKDIR}/config"
+echo "${SUPPRESSIONS}" > "${WORKDIR}/config/suppressions.json"
+cat "${WORKDIR}/config/suppressions.json"
+opa eval ${POLICIES[@]} --data "${WORKDIR}/config" --data "$1" 'data.hacbs.contract[_].deny[_]' --format pretty

@@ -1,0 +1,11 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: EnterpriseContract
+metadata:
+  name: sample
+spec:
+  rules:
+    - ref: quay.io/zregvart_redhat/redhat-ec:v1
+      suppress:
+        - com_redhat_build_host_label_required
+    - ref: quay.io/zregvart_redhat/k8s-best-ec:v1
